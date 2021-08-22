@@ -1,0 +1,9 @@
+---
+# defaults file for jenkins setup
+jenkins_config_owner: "jenkins"
+jenkins_config_group: "jenkins"
+jenkins_home: /var/lib/jenkins 
+jenkins_user: "jenkins"
+jenkins_pass: "jenkins"
+jenkins_fullname: "jenkins"
+jenkins_email: "jenkins@gmail.com"

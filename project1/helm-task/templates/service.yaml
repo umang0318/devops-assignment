@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.metadata.name }}
+  labels:
+    app: {{ include "webstore.fullname" }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.port }}
+  {{- if .Values.service.tls.enabled }}	
+    targetPort: {{ .Values.httpsPort }}
+	name: https
+  {{- end }}
+  {{- if not .Values.service.tls.enabled }}	
+    targetPort: {{ .Values.httpPort }}
+	name: http
+  {{- end }}
+  {{- if eq .Values.service.type "NodePort"}}
+    nodePort: {{ .Values.service.nodeport }}
+  {{- end }}
+  selector:
+    app: {{ include "webstore.fullname" }}

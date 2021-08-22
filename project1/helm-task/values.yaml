@@ -1,0 +1,27 @@
+replicaCount: 2
+
+metadata:
+  name: web-server
+
+labels:
+  name: web-store
+
+images:
+  nginx:
+    name: nginx
+    tag: 1.16-alpine
+    
+topologyKey:kubernetes.io/hostname
+
+httpsPort: 443
+httpPort: 80
+
+service:
+  metadata:
+    name: my-app
+  port: 80
+  type: NodePort
+  nodeport: 30002
+  tls:
+    enabled: false
+  

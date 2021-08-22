@@ -1,0 +1,20 @@
+give a brief explanation for below scenario
+Lets say some process pushes the yaml files to s3 bucket, as soon as its pushed need to convert it json and push it back same bucket.
+
+
+Solution:
+Following are the steps we can follow
+
+1.  As user uploads his file to S3, We can capture events in S3.
+2.  We can use these events to create notification to trigger lambda function when data file is uploaded to the bucket
+3   Lamda function will convert the file and write the JSON file to bucket
+
+Steps:
+1. Create S3 bucket
+2. Enable events in S3 and under events add notification and point it to the lambda.
+3. Here a process is required to be set such that the user should upload files with particular suffix and prefix.
+4. Let's assume some suffix and prefix is defined . While creating event notification use these suffix and prefix this will ensure that the Lambda fuction will only get triggered once for every file. if it is not in plance one can end up in infinite in loop execution of lambda.
+5. Under notification provide lambda function which converts the data into json and upload it in same bucket.
+6. Create policy to proed lambda fuction to fect and upload files in the s3 bucket and attach it to the lambda function.
+7. Lambda fuction should be having necessary code to convert data to the json file.
+

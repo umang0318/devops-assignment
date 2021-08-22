@@ -1,0 +1,13 @@
+---
+#tasks file for jenkins-setup
+- name: using Centos file
+  include_tasks: centos.yml
+  when: ansible_distribution == "CentOS"
+  
+- name: using Ubuntu file
+  include_tasks: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+  
+- name: using Amazon file
+  include_tasks: amazon.yml
+  when: ansible_distribution == "Amazon-Linux"

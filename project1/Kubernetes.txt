@@ -1,0 +1,41 @@
+Lets say a if application want to run succesfully, then we need one web app pod and other database pod. Now what are the concepts and objects will you use to make application highly available, secured and scalling if load increases.
+
+Solution:
+	For this one need to use following objects and resources in Kubernetes
+	1.  Deployment
+	2.  Statefulset
+	3.  Service
+	4.  PVC
+	5.  PV
+	6.  Service Account
+	7.  Roles
+	8.  Role Binding
+	9.  Cluster Role
+	10. Cluster Role Binding
+	11. Network Policy
+	12. HPA
+	13. Node Auto scaling(In cloud environment)/Hogging(In On prem environment)
+	14. Ingress
+	15. Monitoring solution (Prometheus)
+	
+Deploying Application with HA and security
+    1.  Web-app application pod can be deployed using Deployment. Deployment will automatically create replica set and the replicas maintained
+    2.  Database is created using the statefulset and will use PVC to stroe persistent data. PVC will be created on PV. So firstly one must creat PV and then   create PVC on PV.
+    3.   Both the databases and web-app application pod is accessible via services inside a cluster.
+    4.   Here on database we can implement Network Policy so that only web-app and Prometheus pod can access it.
+    
+    5.   Prometheus is deployed using deployment and it is used to cature metrics . Here we can measrue the load in the system based on counting the number of request per second
+    6.   Based on the metrics HPA is triggered.
+
+    7.   To allow external users to access the web-app portal we need to use ingress and we can define the path based routing in the ingress.
+    8.   Ingress is basically exposed by using the loadbalancer, the communication with the ingress should be on https and TLS connection can be handeled by the loadbalancer.
+    9.   To enhance security the connections inside the cluster are required to be TLS for which cert manager as a service can be implemented which manages all the certificates of the other services.
+    10. Via Pods there should be the limited access to the cluster objects which is managed by using the service accounts, roles, cluster role, cluster role binding and role binding.
+	11. Access can be controlled to a cluscter by using RBAC (service accounts, roles, cluster role, cluster role binding and role binding.)
+
+Scaling
+    1. For load management first concecpt is of using Resource & Limits concept(Hogging, generally used in On prem environmnet), which helps in defining the memory and cpu for each pod such that when the Pods comes up it comes up with the specified resources of memory and cpu in the Pod and when load increases it can expand up to its limits. Limits are kept far fetched.
+    2.  Second and advanced way is to use Horizontal Pod autoscaling for which it requires a monitoring solution to be running and capturing metrics based on the metrics Pods can be autoscaled.
+    3.  In cloud environmnet we can work with one node always has 50% vacant resources and to do scaling using the metrices from the monitoring services(example cloudwatch in AWS + Lambda function ) When the load increases. This is applicable for the Node autoscaling.
+
+

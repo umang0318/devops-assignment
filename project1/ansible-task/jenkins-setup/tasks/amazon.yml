@@ -1,0 +1,84 @@
+---
+# tasks file for jenkins on CENTOS
+- name: Create Jenkins group
+  group:
+    name: "{{ jenkins_config_group }}"
+    state: present
+
+- name: Create Jenkins user
+  user:
+    name: "{{ jenkins_config_owner }}"
+    group: "{{ jenkins_config_group }}"
+    home: "{{ jenkins_home }}"
+    shell: "/bin/false"
+    state: present
+
+- name: add jenkins key
+  rpm_key:
+    state: present
+    key: "{{ jenkins_key_rpm }}"
+
+- name: Repos
+  debug:
+    msg: "{{ item.value.description }} {{ item.value.name }}, {{ item.value.url }}"
+  loop:
+    "{{ lookup('dict',repos) }}"
+
+- name: "Set EPEL yum repository"
+  yum_repository:
+    name: "{{ item.value.name }}"
+    baseurl: "{{ item.value.url }}"
+    description: "{{ item.value.description }}"
+  loop:
+    "{{ lookup('dict',repos, wantlist=True) }}"
+    
+- name: Update apt-get repo and cache
+  apt: update_cache=yes force_apt_get=yes cache_valid_time= 3600
+
+- name: "Install Java and Jenkins"
+  yum:
+    name: "{{ item.value.name }}"
+    state: present
+  loop:
+    "{{ lookup('dict',softwares) }}"
+
+- name: "Starting jenkins"
+  service:
+    name: "jenkins"
+    state: started
+    enabled: yes
+    
+- name: JENKINS-PASSTOKEN | Get intial authentication token
+  shell: 'cat {{ jenkins_home }}/secrets/initialAdminPassword'
+  register: admin_auth_token
+  
+- debug: var=admin_auth_token.stdout.lines
+
+- name: JENKINS-CREDENTIALS | Create CRUMB authentication request
+  url:
+    url: 'http://localhost:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)'
+	user: admin
+	password: '{{ admin_auth_token }}'
+	force_basic_auth: yes
+	return_content: yes
+  register: crumb
+
+- name: JENKINS-CREDENTIALS | Add Jenkins administration account
+  url:
+    url: 'http://localhost:8080/securityRealm/createAccountByAdmin'
+	user: admin
+	password: '{{ admin_auth_token.stdout }}'
+	force_basic_auth: yes
+	follow_redirects: all
+	headers:
+	  Jenkins-Crumb: '{{ crumb.content.split(":")[1] }}'
+	  Cookie: ' {{ crumb.set_cookie }}'
+	body: 'username={{ jenkins_user }}&passwrd1={{ jenkins_pass }}&password2={{ jenkins_pass }}&fullname={{ jenkins_fullname }}&email={{ jenkins_email }}'
+
+- name: Install Plugin
+  jenkins_plugin:
+    name: build-pipeline-plugin
+	url_username: "{{ jenkins_user }}"
+	url_password: "{{ jenkins_pass }}"
+	url: 'http://localhost:8080'
+	
